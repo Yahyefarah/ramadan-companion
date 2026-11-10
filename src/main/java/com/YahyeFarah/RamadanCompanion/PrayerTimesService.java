@@ -1,18 +1,18 @@
 package com.YahyeFarah.RamadanCompanion;
 
 import java.net.http.HttpClient;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PrayerTimesService {
 
     private static final int RAMADAN_MONTH = 9;
-    private static final String DATE_FORMAT = "\\d{2}-\\d{2}-\\d{4}";
+    private static final DateTimeFormatter ALADHAN_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     private final RestClient restClient = RestClient.builder()
             .baseUrl("https://api.aladhan.com/v1")
@@ -22,16 +22,10 @@ public class PrayerTimesService {
                             .build()))
             .build();
 
-    public PrayerTimes getTimes(String city, String country, String date) {
-        String path;
-        if (date == null || date.isBlank()) {
-            path = "/timingsByCity";
-        } else if (date.matches(DATE_FORMAT)) {
-            path = "/timingsByCity/" + date;
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Date must be in DD-MM-YYYY format, for example 01-03-2026");
-        }
+    public PrayerTimes getTimes(String city, String country, LocalDate date) {
+        String path = (date == null)
+                ? "/timingsByCity"
+                : "/timingsByCity/" + date.format(ALADHAN_DATE_FORMAT);
 
         AladhanResponse response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
