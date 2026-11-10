@@ -6,6 +6,8 @@ public record PrayerTimes(
         String date,
         String hijriDate,
         String hijriMonth,
+        boolean ramadan,
+        Integer ramadanDay,
         String fajr,
         String sunrise,
         String dhuhr,

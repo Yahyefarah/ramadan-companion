@@ -18,7 +18,8 @@ public class PrayerTimesController {
     @GetMapping("/prayer-times")
     public PrayerTimes prayerTimes(
             @RequestParam(defaultValue = "Nashville") String city,
-            @RequestParam(defaultValue = "US") String country) {
-        return service.getToday(city, country);
+            @RequestParam(defaultValue = "US") String country,
+            @RequestParam(required = false) String date) {
+        return service.getTimes(city, country, date);
     }
 }

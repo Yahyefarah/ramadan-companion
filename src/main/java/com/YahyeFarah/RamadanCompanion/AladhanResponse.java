@@ -22,7 +22,7 @@ public record AladhanResponse(Data data) {
     public record DateInfo(String readable, Hijri hijri) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Hijri(String date, HijriMonth month, String year) {}
+    public record Hijri(String date, String day, HijriMonth month, String year) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record HijriMonth(int number, String en) {}
