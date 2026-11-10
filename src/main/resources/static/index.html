@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadan Companion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="container">
+    <header>
+        <h1>Ramadan Companion</h1>
+        <p id="location" class="location">Nashville, US</p>
+        <p class="dates"><span id="gregorian"></span> · <span id="hijri"></span></p>
+    </header>
+
+    <form id="search-form" class="controls">
+        <input id="city" type="text" placeholder="City" value="Nashville">
+        <input id="country" type="text" placeholder="Country" value="US">
+        <input id="date" type="date">
+        <button type="submit">Show times</button>
+        <button type="button" id="today-btn" class="secondary">Today</button>
+        <button type="button" id="ramadan-demo-btn" class="secondary">Preview Ramadan</button>
+    </form>
+
+    <p id="message" class="message"></p>
+
+    <section id="ramadan-section" class="card ramadan" hidden>
+        <h2 id="ramadan-day">Ramadan</h2>
+        <div class="fast-times">
+            <div>
+                <span class="label">Suhoor ends</span>
+                <span id="suhoor" class="big-time"></span>
+            </div>
+            <div>
+                <span class="label">Iftar</span>
+                <span id="iftar" class="big-time"></span>
+            </div>
+        </div>
+        <p id="fast-label" class="countdown-label"></p>
+        <p id="fast-countdown" class="countdown"></p>
+    </section>
+
+    <section class="card">
+        <p id="next-label" class="countdown-label"></p>
+        <p id="next-countdown" class="countdown"></p>
+        <table>
+            <tbody id="times-body"></tbody>
+        </table>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
