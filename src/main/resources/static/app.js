@@ -181,10 +181,11 @@ function renderRamadanCountdown() {
   } else {
     title.textContent = `Ramadan ${r.hijriYear} AH begins in`;
     big.textContent = `${r.daysUntilStart} ${r.daysUntilStart === 1 ? "day" : "days"}`;
-    details.textContent =
-      `First Taraweeh: night of ${formatLongDate(dayBefore(r.startDate))} · ` +
-      `First fast: ${formatLongDate(r.startDate)} · ` +
-      `Eid al-Fitr: ${formatLongDate(r.eidDate)}`;
+        details.textContent = [
+          `First Taraweeh: night of ${formatLongDate(dayBefore(r.startDate))}`,
+          `First fast: ${formatLongDate(r.startDate)}`,
+          `Eid al-Fitr: ${formatLongDate(r.eidDate)}`,
+        ].join("\n");
   }
 }
 
