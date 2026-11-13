@@ -8,10 +8,12 @@ const PRAYERS = [
   { key: "isha", name: "Isha" },
 ];
 
-const RAMADAN_PREVIEW_DATE = "2026-03-01";
+const DEFAULT_CITY = "Nashville";
+const DEFAULT_COUNTRY = "US";
 
-let current = null;     // the latest data from our API
-let isPreview = false;  // true when looking at a date other than today
+let current = null;       // the latest prayer times from our API
+let ramadanInfo = null;   // the next (or current) Ramadan from our API
+let isPreview = false;    // true when looking at a date other than today
 
 // ---------- Helpers ----------
 
@@ -49,6 +51,30 @@ function todayIso() {
   return `${d.getFullYear()}-${month}-${day}`;
 }
 
+// "2027-02-08" -> "Monday, February 8, 2027" (built from parts to avoid time-zone shifts)
+function formatLongDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric",
+  });
+}
+
+// "2027-02-08" -> "2027-02-07" (the day before)
+function dayBefore(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d - 1);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+// "new york" -> "New York", "us" -> "US"
+function prettyPlace(city, country) {
+  const titleCase = (text) => text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  const prettyCountry = country.length <= 3 ? country.toUpperCase() : titleCase(country);
+  return `${titleCase(city)}, ${prettyCountry}`;
+}
+
 // The next prayer after right now (skips Sunrise, which is not a prayer)
 function findNextPrayer(data) {
   const now = new Date();
@@ -68,8 +94,8 @@ function showMessage(text) {
 // ---------- Loading data from our Spring Boot API ----------
 
 async function loadTimes() {
-  const city = document.getElementById("city").value.trim() || "Nashville";
-  const country = document.getElementById("country").value.trim() || "US";
+  const city = document.getElementById("city").value.trim() || DEFAULT_CITY;
+  const country = document.getElementById("country").value.trim() || DEFAULT_COUNTRY;
   const date = document.getElementById("date").value; // "" or "YYYY-MM-DD"
 
   const params = new URLSearchParams({ city, country });
@@ -82,11 +108,23 @@ async function loadTimes() {
     current = await response.json();
     isPreview = date !== "" && date !== todayIso();
     render();
+    renderRamadanCountdown();
     tick();
     showMessage("");
   } catch (error) {
     console.error(error);
     showMessage("Could not load prayer times. Check the city and country and try again.");
+  }
+}
+
+async function loadRamadanInfo() {
+  try {
+    const response = await fetch("/api/ramadan");
+    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+    ramadanInfo = await response.json();
+    renderRamadanCountdown();
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -96,7 +134,7 @@ function render() {
   const d = current;
   const [hDay, hMonthNum, hYear] = d.hijriDate.split("-");
 
-  document.getElementById("location").textContent = `${d.city}, ${d.country}`;
+  document.getElementById("location").textContent = prettyPlace(d.city, d.country);
   document.getElementById("gregorian").textContent = d.date;
   document.getElementById("hijri").textContent = `${Number(hDay)} ${d.hijriMonth} ${hYear} AH`;
 
@@ -121,6 +159,32 @@ function render() {
     timeCell.textContent = to12Hour(d[p.key]);
     row.append(nameCell, timeCell);
     tbody.append(row);
+  }
+}
+
+// The "Ramadan begins in..." / "Eid in..." card (only for today, not previews)
+function renderRamadanCountdown() {
+  const section = document.getElementById("ramadan-countdown");
+  section.hidden = ramadanInfo === null || isPreview;
+  if (section.hidden) return;
+
+  const r = ramadanInfo;
+  const title = document.getElementById("rc-title");
+  const big = document.getElementById("rc-big");
+  const details = document.getElementById("rc-details");
+
+  if (r.inProgress) {
+    const daysToEid = r.totalDays - r.ramadanDay + 1;
+    title.textContent = `Ramadan ${r.hijriYear} AH · Day ${r.ramadanDay} of ${r.totalDays}`;
+    big.textContent = `Eid al-Fitr in ${daysToEid} ${daysToEid === 1 ? "day" : "days"}`;
+    details.textContent = `Expected Eid: ${formatLongDate(r.eidDate)}`;
+  } else {
+    title.textContent = `Ramadan ${r.hijriYear} AH begins in`;
+    big.textContent = `${r.daysUntilStart} ${r.daysUntilStart === 1 ? "day" : "days"}`;
+    details.textContent =
+      `First Taraweeh: night of ${formatLongDate(dayBefore(r.startDate))} · ` +
+      `First fast: ${formatLongDate(r.startDate)} · ` +
+      `Eid al-Fitr: ${formatLongDate(r.eidDate)}`;
   }
 }
 
@@ -179,15 +243,27 @@ document.getElementById("search-form").addEventListener("submit", (event) => {
   loadTimes();
 });
 
-document.getElementById("today-btn").addEventListener("click", () => {
+// Changing the date reloads right away (no need to press "Show times")
+document.getElementById("date").addEventListener("change", loadTimes);
+
+// Reset: back to Nashville, today
+document.getElementById("reset-btn").addEventListener("click", () => {
+  document.getElementById("city").value = DEFAULT_CITY;
+  document.getElementById("country").value = DEFAULT_COUNTRY;
   document.getElementById("date").value = "";
   loadTimes();
 });
 
+// Preview Ramadan: jump to the first day of the next Ramadan
 document.getElementById("ramadan-demo-btn").addEventListener("click", () => {
-  document.getElementById("date").value = RAMADAN_PREVIEW_DATE;
+  if (ramadanInfo === null) {
+    showMessage("Ramadan dates are still loading, try again in a second.");
+    return;
+  }
+  document.getElementById("date").value = ramadanInfo.inProgress ? "" : ramadanInfo.startDate;
   loadTimes();
 });
 
 loadTimes();
+loadRamadanInfo();
 setInterval(tick, 1000);

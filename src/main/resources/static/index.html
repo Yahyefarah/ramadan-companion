@@ -19,11 +19,18 @@
         <input id="country" type="text" placeholder="Country" value="US">
         <input id="date" type="date">
         <button type="submit">Show times</button>
-        <button type="button" id="today-btn" class="secondary">Today</button>
+        <button type="button" id="reset-btn" class="secondary">Reset</button>
         <button type="button" id="ramadan-demo-btn" class="secondary">Preview Ramadan</button>
     </form>
 
     <p id="message" class="message"></p>
+
+    <section id="ramadan-countdown" class="card upcoming" hidden>
+        <p id="rc-title" class="countdown-label"></p>
+        <p id="rc-big" class="countdown"></p>
+        <p id="rc-details" class="details"></p>
+        <p class="note">Dates are calculated estimates. Local moon sighting may differ by a day.</p>
+    </section>
 
     <section id="ramadan-section" class="card ramadan" hidden>
         <h2 id="ramadan-day">Ramadan</h2>

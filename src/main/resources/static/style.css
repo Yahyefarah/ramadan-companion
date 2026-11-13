@@ -152,3 +152,20 @@ tr.next td {
   font-weight: 700;
   color: #006060;
 }
+
+.upcoming {
+  text-align: center;
+  border: 2px solid #009999;
+}
+
+.details {
+  margin: 0;
+  color: #3d5050;
+  line-height: 1.5;
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 0.8em;
+  color: #7a8a8a;
+}

@@ -1,10 +1,8 @@
 package com.YahyeFarah.RamadanCompanion;
 
-import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -14,13 +12,11 @@ public class PrayerTimesService {
     private static final int RAMADAN_MONTH = 9;
     private static final DateTimeFormatter ALADHAN_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-    private final RestClient restClient = RestClient.builder()
-            .baseUrl("https://api.aladhan.com/v1")
-            .requestFactory(new JdkClientHttpRequestFactory(
-                    HttpClient.newBuilder()
-                            .followRedirects(HttpClient.Redirect.NORMAL)
-                            .build()))
-            .build();
+    private final RestClient restClient;
+
+    public PrayerTimesService(RestClient aladhanRestClient) {
+        this.restClient = aladhanRestClient;
+    }
 
     public PrayerTimes getTimes(String city, String country, LocalDate date) {
         String path = (date == null)
