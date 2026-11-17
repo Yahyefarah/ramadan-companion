@@ -2,7 +2,6 @@ package com.YahyeFarah.RamadanCompanion;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -10,7 +9,6 @@ import org.springframework.web.client.RestClient;
 @Service
 public class RamadanService {
 
-    private static final int RAMADAN_MONTH = 9;
     private static final int SHAWWAL_MONTH = 10;
     private static final DateTimeFormatter ALADHAN_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -22,22 +20,14 @@ public class RamadanService {
 
     public RamadanInfo getRamadanInfo(LocalDate today) {
         AladhanResponse.Hijri todayHijri = convert("/gToH/" + today.format(ALADHAN_DATE_FORMAT)).hijri();
-        int hijriYear = Integer.parseInt(todayHijri.year());
-        int hijriMonth = todayHijri.month().number();
 
-        // Past Ramadan this Hijri year? Then the next one is next year.
-        int ramadanYear = (hijriMonth > RAMADAN_MONTH) ? hijriYear + 1 : hijriYear;
+        int ramadanYear = RamadanCalculator.nextRamadanYear(
+                todayHijri.month().number(), Integer.parseInt(todayHijri.year()));
 
-        LocalDate start = toGregorian(1, RAMADAN_MONTH, ramadanYear);
+        LocalDate start = toGregorian(1, RamadanCalculator.RAMADAN_MONTH, ramadanYear);
         LocalDate eid = toGregorian(1, SHAWWAL_MONTH, ramadanYear);
-        LocalDate end = eid.minusDays(1);
 
-        boolean inProgress = !today.isBefore(start) && !today.isAfter(end);
-        long daysUntilStart = inProgress ? 0 : ChronoUnit.DAYS.between(today, start);
-        Integer ramadanDay = inProgress ? (int) ChronoUnit.DAYS.between(start, today) + 1 : null;
-        int totalDays = (int) ChronoUnit.DAYS.between(start, eid);
-
-        return new RamadanInfo(ramadanYear, inProgress, start, end, eid, daysUntilStart, ramadanDay, totalDays);
+        return RamadanCalculator.buildInfo(today, ramadanYear, start, eid);
     }
 
     // Hijri day/month/year -> normal (Gregorian) date, e.g. 1 Ramadan 1448 -> 2027-02-08
