@@ -79,7 +79,7 @@ This started as my database course project: a small website where I typed Ramada
 
 ##  Roadmap
 
-- [ ] Automated tests (JUnit) and CI with GitHub Actions
+- [ x ] Automated tests (JUnit) and CI with GitHub Actions
 - [ ] Deploy online
 - [ ] Remember the last city and "use my location"
 - [ ] Full 30-day Ramadan timetable and the last ten nights
