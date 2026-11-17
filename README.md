@@ -1,5 +1,5 @@
 # 🌙 Ramadan Companion
-
+![CI](https://github.com/Yahyefarah/ramadan-companion/actions/workflows/ci.yml/badge.svg)
 A full-stack web app that shows accurate prayer times for any city and **automatically switches into Ramadan mode** when the month begins, with Suhoor and Iftar times, live countdowns, and the day of Ramadan.
 
 Built with **Java 21 + Spring Boot** on the backend and plain **HTML, CSS and JavaScript** on the frontend.
